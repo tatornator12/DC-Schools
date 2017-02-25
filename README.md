@@ -1,6 +1,6 @@
 # DC-Schools
 
-This map depicts all of the public schools on a tile layer of Washington, DC using the JavaScript for ArcGIS API 4.x.
+This map depicts all of the public schools on a tile layer of Washington, DC using the ArcGIS API for JavaScript 4.x.
 
 #### GitHub project site
 

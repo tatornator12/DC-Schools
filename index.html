@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Homework 5</title>
+  
+  <link rel="stylesheet" href="https://js.arcgis.com/4.2/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.2/"></script>
+
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 98%;
+      width: 98%;
+    }
+    
+    #legendDiv {
+      max-width: 300px;
+      background-color: black;
+      padding: 8px;
+      color: white;
+      opacity: 0.85;
+    }
+    
+    p {
+      max-width: 200px;
+      background-color: black;
+      padding: 15px;
+      border: 1px solid white;
+      color: white;
+      opacity: .75;
+    }
+    
+    h1 {
+      background-color:#D8E0E2;
+      background-repeat:repeat-x;
+      border-bottom:1px solid #000000;
+      border-top:1px solid #000000;
+      color: black;
+      font-family: Verdana,Arial,Helvetica,sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing:1.1px;
+      margin: 15px 0 10px;
+      padding: 3px 10px;
+      text-align: center;
+    }
+    
+  </style>
+
+
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/layers/CSVLayer",
+      "esri/layers/TileLayer",
+      "esri/layers/FeatureLayer",
+      "esri/views/MapView",
+      "esri/renderers/UniqueValueRenderer",
+      "esri/symbols/SimpleMarkerSymbol",
+      "esri/config",
+      "esri/core/urlUtils",
+      "esri/widgets/Legend",
+      "dojo/dom-construct",
+      "dojo/domReady!"
+    ], function(
+      Map,
+      CSVLayer,
+      TileLayer,
+      FeatureLayer,
+      MapView,
+      UniqueValueRenderer,
+      SimpleMarkerSymbol,
+      esriConfig,
+      urlUtils,
+      Legend,
+      domConstruct) {
+      
+      var url = "http://opendata.dc.gov/datasets/4ac321b2d409438ebd76a6569ad94034_5.csv";
+
+      
+      esriConfig.request.corsEnabledServers.push(url);
+      
+//      urlUtils.addProxyRule({
+//        urlPrefix: "opendata.dc.gov",
+//        proxyUrl: "/sproxy/"
+//      });
+      
+      
+      var defaultSym = new SimpleMarkerSymbol({
+          color: "pink",
+          size: "8px"
+      });
+
+      var elem = new SimpleMarkerSymbol({
+          color: "blue",
+          size: "12px"
+      });
+
+      var middle = new SimpleMarkerSymbol({
+          color: "green",
+          size: "16px"
+      });
+
+      var high = new SimpleMarkerSymbol({
+          color: "red",
+          size: "20px"
+      });
+
+      var renderer = new UniqueValueRenderer({
+        defaultSymbol: defaultSym,
+        defaultLabel: "Special",
+        field: "LEVEL_",
+        uniqueValueInfos: [
+          {
+            value: "ES",
+            symbol: elem,
+            label: "Elementary School"
+          },
+          {
+            value: "MS",
+            symbol: middle,
+            label: "Middle School"
+          },
+          {
+            value: "HS",
+            symbol: high,
+            label: "High School"
+          }]
+        });
+      
+      var csvLayer = new CSVLayer({
+        url: url,
+        renderer: renderer,
+        longitudeField: "LONGITUDE",
+        latitudeField: "LATITUDE"
+      });       
+
+      var hoodLayer = new FeatureLayer({
+    	  url: "http://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Administrative_Other_Boundaries_WebMercator/MapServer/17"
+      });
+      
+      var dcLayer = new TileLayer({
+    	  url: "https://maps2.dcgis.dc.gov/DCGIS/rest/services/DCGIS_DATA/DC_Basemap_WebMercator/MapServer",
+    	  opacity: 0.55
+      });
+      
+      var map = new Map({
+        basemap: "dark-gray",
+        layers: [dcLayer, csvLayer, hoodLayer]
+      });
+
+      var view = new MapView({
+        container: "viewDiv",
+        center: [-77.029681, 38.908349],
+        zoom: 12,
+        map: map
+      });
+
+      var legend = new Legend({
+          view: view,
+          layerInfos: [{
+              layer: hoodLayer,
+              title: "Neighborhood Clusters"
+            }]
+        }, "legendDiv");
+      
+      view.ui.add(legend, "bottom-right");
+      
+      var info = domConstruct.create("infoDiv", {
+        innerHTML: "<p>This map depicts all of the public schools on a tile layer of Washington, DC. <br> <br> Elementary Schools are in blue, Middle Schools in green, High Schools in red, and Special Schools in pink. <br> <br> The map also displays all of the neighborhood clusters as polygon layers.</p>",
+      });
+      
+      view.ui.add(info, "top-right");
+
+    });
+  </script>
+</head>
+
+<body>
+<h1>DC Public Schools</h1>
+  <div id="viewDiv"></div>
+  <div id="legendDiv"></div>
+</body>
+
+</html>
